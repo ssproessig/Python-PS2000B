@@ -9,6 +9,7 @@ Tested with:
 Tested on:
 
 + Windows 7 x64 
++ Ubuntu 16.04.1 LTS
 
 ## Features of Python-PS2000B
 ### Supported
