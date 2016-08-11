@@ -10,13 +10,23 @@ Tested on:
 
 + Windows 7 x64 
 
+## Features of Python-PS2000B
+### Supported
+- read static device information (manufacturer, serial, device type ...)
+- read dynamic device information (current, voltage)
+- read/write remote control
+- read/write output control
+
+### Still todo
+- set voltage and current
+- wrap error results in own telegram
 
 ## Prerequisites
 
 ### Python
 The following third-party Python libraries are needed:
 
-* pyserial - serial communication library for Python, see https://pypi.python.org/pypi/pyserial
+* `pyserial` - serial communication library for Python, see https://pypi.python.org/pypi/pyserial
 
 ### Windows
 On Windows the USB driver (fetch it from http://www.elektroautomatik.de/files/eautomatik/treiber/usb/ea_device_driver.rar) must be installed. Afterwards you can find the serial port `COMxx` in the *device manager*.
@@ -27,7 +37,22 @@ On Linux the device is detected as `/dev/ttyACMx` (abstract control model, see h
 Most Linuxes will require users to elevate for accessing the device. If you want to access the device as your current user, just add it to the group `dialout` (`ls -lah /dev/ttyACM0` will show you the group to use, usually this is `dialout`) and login again.
 
 ## Usage
-TODO
+```python
+import time
+from pyps2000b import PS2000B
+
+
+device = PS2000B.PS2000B("/dev/ttyACM0")
+
+print("Device status: %s" % device.get_device_status_information())
+
+device.enable_remote_control()
+device.enable_output()
+
+time.sleep(1)
+
+print("Current output: %0.2f V , %0.2f A" % (device.get_voltage(), device.get_current()))
+```
 
 ## Documentation
 + product website: http://www.elektroautomatik.de/en/ps2000b.html
