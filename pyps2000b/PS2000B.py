@@ -19,6 +19,9 @@
 
 import serial
 import struct
+import sys
+PY_3 = sys.version_info >= (3, 0)
+
 
 __author__ = "Sören Sprößig <ssproessig@gmail.com>"
 
@@ -40,6 +43,11 @@ def as_word(raw_data):
     return w
 
 
+def _ord(x):
+    """Wrap ord() call as we only need it in Python 2"""
+    return x if PY_3 else ord(x)
+
+
 # noinspection PyClassHasNoInit
 class Constants:
     """Communication constants"""
@@ -51,6 +59,9 @@ class Constants:
     TIMEOUT_BETWEEN_COMMANDS = 0.05
     # FIXME: for now we only support node=0, meaning first output
     DEVICE_NODE = 0x0
+    # according to spec [1] 2.4:
+    # maximum length of a telegram is 21 bytes (Byte 0..20)
+    MAX_LEN_IN_BYTES = 21
 
 
 # noinspection PyClassHasNoInit
@@ -120,7 +131,7 @@ class FromPowerSupply(Telegram):
 
     def __init__(self, raw_data):
         Telegram.__init__(self)
-        data = [ord(x) for x in raw_data]
+        data = [_ord(x) for x in raw_data]
         self._bytes = data[0:-2]
         self._checksum = data[len(data) - 2:len(data)]
         self.checksum_ok = self._checksum == self._calc_checksum()
@@ -230,7 +241,7 @@ class PS2000B:
 
     def __send_and_receive(self, raw_bytes):
         self.__serial.write(raw_bytes)
-        result = FromPowerSupply(self.__serial.readline())
+        result = FromPowerSupply(self.__serial.read(Constants.MAX_LEN_IN_BYTES))
         return result
 
     def get_device_status_information(self):

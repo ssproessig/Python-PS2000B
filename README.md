@@ -4,11 +4,13 @@ Python library to work with Elektro-Automatik PS 2000 B power supplies via USB.
 ## Compatibility
 Tested with:
 
-+ Python 2.7 
++ Python 2.7
++ Python 3.5, 3.6
 
 Tested on:
 
 + Windows 7 x64 
++ Windows 10 x64 Version 1607 (OS Build 14393.2035)
 + Ubuntu 16.04.1 LTS
 
 ## Features of Python-PS2000B
