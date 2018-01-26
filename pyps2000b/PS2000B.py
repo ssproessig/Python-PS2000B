@@ -43,6 +43,11 @@ def as_word(raw_data):
     return w
 
 
+def _ord(x):
+    """Wrap ord() call as we only need it in Python 2"""
+    return x if PY_3 else ord(x)
+
+
 # noinspection PyClassHasNoInit
 class Constants:
     """Communication constants"""
@@ -123,7 +128,7 @@ class FromPowerSupply(Telegram):
 
     def __init__(self, raw_data):
         Telegram.__init__(self)
-        data = [ord(x) for x in raw_data]
+        data = [_ord(x) for x in raw_data]
         self._bytes = data[0:-2]
         self._checksum = data[len(data) - 2:len(data)]
         self.checksum_ok = self._checksum == self._calc_checksum()
