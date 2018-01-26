@@ -19,6 +19,9 @@
 
 import serial
 import struct
+import sys
+PY_3 = sys.version_info >= (3, 0)
+
 
 __author__ = "Sören Sprößig <ssproessig@gmail.com>"
 
