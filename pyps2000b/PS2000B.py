@@ -59,6 +59,9 @@ class Constants:
     TIMEOUT_BETWEEN_COMMANDS = 0.05
     # FIXME: for now we only support node=0, meaning first output
     DEVICE_NODE = 0x0
+    # according to spec [1] 2.4:
+    # maximum length of a telegram is 21 bytes (Byte 0..20)
+    MAX_LEN_IN_BYTES = 21
 
 
 # noinspection PyClassHasNoInit
@@ -238,7 +241,7 @@ class PS2000B:
 
     def __send_and_receive(self, raw_bytes):
         self.__serial.write(raw_bytes)
-        result = FromPowerSupply(self.__serial.readline())
+        result = FromPowerSupply(self.__serial.read(Constants.MAX_LEN_IN_BYTES))
         return result
 
     def get_device_status_information(self):
