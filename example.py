@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# coding=utf-8
 import platform
 import time
 
@@ -24,10 +26,19 @@ if not device_status_info.remote_control_active:
     print("...will enable remote control...")
     device.enable_remote_control()
 
+print("...set voltage to 12V and max current to 1A...")
+device.voltage = 12
+device.current = 1
+time.sleep(1)
 print("...now enabling the power output control...")
 device.enable_output()
-print("Device status: %s" % device.get_device_status_information())
 time.sleep(1)
+print("Device status: %s" % device.get_device_status_information())
+print("Current output: %0.2f V , %0.2f A" % (device.voltage, device.current))
+time.sleep(2)
+print("...set voltage to 5.1V...")
+device.voltage = 5.1
+time.sleep(2)
 print("Current output: %0.2f V , %0.2f A" % (device.get_voltage(), device.get_current()))
 print("...after 2 seconds power output will be disabled again ...")
 time.sleep(2)

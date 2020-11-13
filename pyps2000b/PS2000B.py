@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 # coding=utf-8
 # Python access to Elektro Automatik PS 2000 B devices via USB/serial
 #
@@ -9,7 +9,6 @@
 # - read/write output control
 #
 # Todo:
-# - set voltage and current
 # - wrap error results in own telegram
 #
 # References
@@ -75,6 +74,8 @@ class Objects:
     DEVICE_ARTICLE_NO = 6
     MANUFACTURER = 8
     SOFTWARE_VERSION = 9
+    SET_VALUE_VOLTAGE = 50
+    SET_VALUE_CURRENT = 51
     POWER_SUPPLY_CONTROL = 54
     STATUS_ACTUAL_VALUES = 71
 
@@ -261,6 +262,14 @@ class PS2000B:
         _ = self.__send_and_receive(telegram.get_byte_array())
         self.update_device_information()
 
+    def __send_device_data(self, obj, data):
+        '''
+        Send interger data with obj-id to the PSU
+        '''
+        telegram = ToPowerSupply(0b11, [Constants.DEVICE_NODE, obj, data >>8, data & 0xff], 4)
+        _ = self.__send_and_receive(telegram.get_byte_array())
+        self.update_device_information()
+
     def enable_remote_control(self):
         self.__send_device_control(ControlParameters.SWITCH_MODE_CMD, ControlParameters.SWITCH_MODE_REMOTE)
 
@@ -273,12 +282,62 @@ class PS2000B:
     def disable_output(self):
         self.__send_device_control(ControlParameters.SWITCH_POWER_OUTPUT_CMD, ControlParameters.SWITCH_POWER_OUTPUT_OFF)
 
+    @property
+    def output(self):
+        return self.get_device_status_information().output_active
+
+    @output.setter
+    def output(self, value):
+        if value:
+            self.enable_output()
+        else:
+            self.disable_output()
+
     def get_voltage(self):
         self.update_device_information()
         voltage = self.__device_information.nominal_voltage * self.__device_status_information.actual_voltage_percent
         return voltage / 100
 
+    def get_voltage_setpoint(self):
+        res = self.__read_device_data(2, Objects.SET_VALUE_VOLTAGE).get_data()
+        return self.__device_information.nominal_voltage * ((res[0]<<8) + res[1]) / 25600.0
+
+    def set_voltage(self,value):
+        self.update_device_information()
+        self.enable_remote_control()
+        volt = int(round( (value * 25600.0) / self.__device_information.nominal_voltage ))
+        self.__send_device_data(Objects.SET_VALUE_VOLTAGE, volt)
+        #self.disable_remote_control()
+
+    @property
+    def voltage(self):
+        return self.get_voltage()
+
+    @voltage.setter
+    def voltage(self, value):
+        self.set_voltage(value)
+
     def get_current(self):
         self.update_device_information()
         current = self.__device_information.nominal_current * self.__device_status_information.actual_current_percent
         return current / 100
+
+    def get_curent_setpoint(self):
+        res = self.__read_device_data(2, Objects.SET_VALUE_CURRENT).get_data()
+        return self.__device_information.nominal_current * ((res[0]<<8) + res[1]) / 25600.0
+
+    def set_current(self, value):
+        self.update_device_information()
+        self.enable_remote_control()
+        curr = int(round( (value * 25600.0) / self.__device_information.nominal_current ))
+        self.__send_device_data(Objects.SET_VALUE_CURRENT, curr)
+        #self.disable_remote_control()
+
+    @property
+    def current(self):
+        return self.get_current()
+
+    @current.setter
+    def current(self, value):
+        self.set_current(value)
+
