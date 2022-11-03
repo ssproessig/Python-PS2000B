@@ -9,12 +9,17 @@
 # - read/write output control
 #
 # Todo:
+# - /set voltage and current/
 # - wrap error results in own telegram
 #
 # References
 # [1] = "PS 2000B Programming Guide" from 2015-05-28
 # [2] = "PS 2000B object list"
+# [3] = https://github.com/ssproessig/Python-PS2000B
 #
+#TODO:
+# - getter /setter for remote
+# - implement OVP / OCP get and set functions
 
 import serial
 import struct
@@ -74,6 +79,8 @@ class Objects:
     DEVICE_ARTICLE_NO = 6
     MANUFACTURER = 8
     SOFTWARE_VERSION = 9
+    # SET_OVP_THRESHOLD = 38
+    # SET_OCP_THRESHOLD = 39
     SET_VALUE_VOLTAGE = 50
     SET_VALUE_CURRENT = 51
     POWER_SUPPLY_CONTROL = 54
@@ -182,9 +189,9 @@ class DeviceInformation:
 
     def __str__(self):
         return "%s %s [%s], SW: %s, Art-Nr: %s, [%0.2f V, %0.2f A, %0.2f W]" % \
-               (self.manufacturer,
-                self.device_type, self.device_serial_no,
-                self.software_version, self.device_article_number,
+               (self.manufacturer.decode(),
+                self.device_type.decode(), self.device_serial_no.decode(),
+                self.software_version.decode(), self.device_article_number.decode(),
                 self.nominal_voltage, self.nominal_current, self.nominal_power)
 
 
@@ -213,6 +220,11 @@ class PS2000B:
                                       stopbits=Constants.CONNECTION_STOP_BITS)
 
         self.__device_information = self.__read_device_information()
+
+    def __del__(self):
+        #NOTE necessary ?
+        if self.is_open:
+            return self.__serial.close()
 
     def is_open(self):
         return self.__serial.is_open
@@ -264,7 +276,8 @@ class PS2000B:
 
     def __send_device_data(self, obj, data):
         '''
-        Send interger data with obj-id to the PSU
+        obj  : PS object
+        data : integer data
         '''
         telegram = ToPowerSupply(0b11, [Constants.DEVICE_NODE, obj, data >>8, data & 0xff], 4)
         _ = self.__send_and_receive(telegram.get_byte_array())
