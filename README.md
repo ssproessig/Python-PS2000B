@@ -9,9 +9,10 @@ Tested with:
 
 Tested on:
 
-+ Windows 7 x64 
++ Windows 7 x64
 + Windows 10 x64 Version 1607 (OS Build 14393.2035)
 + Ubuntu 16.04.1 LTS
++ Ubuntu 20.04.1 LTS
 
 ## Features of Python-PS2000B
 ### Supported
@@ -50,11 +51,15 @@ device = PS2000B.PS2000B("/dev/ttyACM0")
 print("Device status: %s" % device.get_device_status_information())
 
 device.enable_remote_control()
+device.voltage = 5.1
+device.current = 1
 device.enable_output()
 
 time.sleep(1)
 
 print("Current output: %0.2f V , %0.2f A" % (device.get_voltage(), device.get_current()))
+
+device.output = False
 ```
 
 ## Documentation
